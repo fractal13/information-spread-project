@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import snap
-import sys, os
+import sys, os, time
 sys.path.append('../../src/information_spread')
 
 import independent_cascade as IC
@@ -10,20 +10,15 @@ def five_node_test():
     graph = snap.LoadEdgeList(snap.PNGraph, "cgl_sample.txt")
     graph = snap.ConvertGraph(snap.PNEANet, graph)
 
-    number_of_trials = 10000
-    for k in range(1, 10):
-        
-        spread_probability = 0.25
+    number_of_trials = 1000
+    spread_probability = 0.25
+    selector = RS.RandomSeedSelector()
+    max_k = 10
 
-        total = 0.
-        for i in range(number_of_trials):
-            active_set_0 = RS.select_random_seeds(graph, k)
-            result = IC.independent_cascade(graph, active_set_0, spread_probability)
-            total += len(result)
-            
-        result = total / float(number_of_trials)
-        print k, result
-
+    results = IC.measure_seed_sizes(graph, spread_probability, number_of_trials, selector, max_k)
+    for r in results:
+        print r
+    
     return
 
 def texas_road_test():
@@ -35,26 +30,20 @@ def texas_road_test():
     graph = snap.LoadEdgeList(snap.PNGraph, filename)
     graph = snap.ConvertGraph(snap.PNEANet, graph)
 
+    number_of_trials = 1
+    spread_probability = 0.25
+    selector = RS.RandomSeedSelector()
+    max_k = 30
 
-    number_of_trials = 10
-    for k in range(1, 30):
-        
-        spread_probability = 0.25
+    results = IC.measure_seed_sizes(graph, spread_probability, number_of_trials, selector, max_k)
+    for r in results:
+        print r
 
-        total = 0.
-        for i in range(number_of_trials):
-            active_set_0 = RS.select_random_seeds(graph, k)
-            result = IC.independent_cascade(graph, active_set_0, spread_probability)
-            total += len(result)
-            
-        result = total / float(number_of_trials)
-        print k, result
-    
     return
 
 def main():
-    #five_node_test()
-    texas_road_test()    
+    five_node_test()
+    #texas_road_test()    
     return
 
 if __name__ == "__main__":

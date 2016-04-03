@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-
 import snap
-import random, os
+import random, os, time
 
 def independent_cascade(graph, active_set_0, spread_probability):
     """
@@ -58,4 +56,37 @@ def independent_cascade_average_influence(graph, active_set_0, spread_probabilit
         total += len(result)
 
     return total / float(number_of_trials)
+
+def measure_seed_sizes(graph, spread_probability, number_of_trials, selector, max_k):
+    """
+    graph is a snap.PNEANet network (directed edges, attributes allowed for edges and nodes)
+    spread_probability is the probability that any node u, will activate node v if there is an edge (u, v)
+    number_of_trials is the number of runs to average influence and run time over
+    selector is a object derived from SeedSelector, to generate seed sets
+    max_k is an integer, the maximum desired number of seed nodes
+
+    returns a Python list of triples.  The values are: k, average influence, average selector run time
+    """
+
+    results = []
+    
+    for k in range(1, max_k+1):
+
+        active_set_0s = []
+        t0 = time.clock()
+        for i in range(number_of_trials):
+            active_set_0s.append( selector.select_seeds(graph, k) )
+        selection_time = time.clock() - t0
+        
+        total = 0.
+        for i in range(number_of_trials):
+            active_set_0 = active_set_0s[i]
+            result = independent_cascade(graph, active_set_0, spread_probability)
+            total += len(result)
+            
+        result = total / float(number_of_trials)
+        avg_selection_time = selection_time / float(number_of_trials)
+        results.append( (k, result, avg_selection_time) )
+        
+    return results
 

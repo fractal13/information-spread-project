@@ -1,28 +1,40 @@
 import snap
 import random
 
-def select_random_seeds(graph, k):
-    """
-    graph is a snap.PNEANet network (directed edges, attributes allowed for edges and nodes)
-    k is an integer, the desired number of seed nodes
+import seed_selector
 
-    returns a Python set of node ids randomly selected from graph
-    """
+class RandomSeedSelector(seed_selector.SeedSelector):
 
-    all_node_ids = []
-    node_ids = set()
-    node = graph.BegNI()
-    while node < graph.EndNI():
-        all_node_ids.append(node.GetId())
-        node.Next()
+    def __init__(self):
+        seed_selector.SeedSelector.__init__(self)
+        return
 
-    if len(all_node_ids) < k:
-        for nid in all_node_ids:
-            node_ids.add(nid)
-    else:
-        while len(node_ids) < k:
-            nid = random.choice(all_node_ids)
-            node_ids.add(nid)
+    def select_seeds(self, graph, k):
+        """
+        graph is a snap.PNEANet network (directed edges, attributes allowed for edges and nodes)
+        k is an integer, the desired number of seed nodes
+        
+        returns a Python set of node ids randomly selected from graph
+        """
+
+        return self.select_random_seeds(graph, k)
+        
+    def select_random_seeds(self, graph, k):
+
+        all_node_ids = []
+        node_ids = set()
+        node = graph.BegNI()
+        while node < graph.EndNI():
+            all_node_ids.append(node.GetId())
+            node.Next()
+
+        if len(all_node_ids) < k:
+            for nid in all_node_ids:
+                node_ids.add(nid)
+        else:
+            while len(node_ids) < k:
+                nid = random.choice(all_node_ids)
+                node_ids.add(nid)
     
-    return node_ids
+        return node_ids
     
