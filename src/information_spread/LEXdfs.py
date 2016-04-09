@@ -1,5 +1,6 @@
 import snap
 import random
+from stack import Stack
 
 VISITED  = "visited"
 LEX      = "lex"
@@ -27,7 +28,8 @@ def LEXdfs(graph, start):
     
 
     # initialize DFS variables
-    stack = [ start.GetId() ]
+    stack = Stack()
+    stack.append( start.GetId() )
     i = 1
 
     # do the search
@@ -39,6 +41,9 @@ def LEXdfs(graph, start):
         # print
         
         # process top node
+        # print
+        # stack.print_all()
+        # print
         node_id = stack.pop()
         node = graph.GetNI(node_id)
         graph.AddIntAttrDatN(node, i, VISITED)
