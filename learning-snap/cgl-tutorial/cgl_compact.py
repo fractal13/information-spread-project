@@ -12,7 +12,7 @@ def main():
     roads = snap.LoadEdgeList(snap.PNGraph, "cgl_sample.txt")
     roadnet = snap.ConvertGraph(snap.PNEANet, roads)
 
-    clusters = compact_community.compact_community(roadnet, 5, 10)
+    clusters = compact_community.compact_community(roadnet, 5)
     print clusters
     
     return

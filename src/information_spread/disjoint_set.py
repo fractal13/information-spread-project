@@ -45,6 +45,22 @@ class DisjointSet:
         
         return
 
+    def get_roots(self):
+        roots = []
+        for u in self.parent.keys():
+            if u == self.parent[u]:
+                roots.append(u)
+        return roots
+
+    def get_sets(self):
+        sets = {}
+        for u in self.parent.keys():
+            root = self.find(u)
+            if root not in sets:
+                sets[root] = []
+            sets[root].append(u)
+        return sets
+        
     def __str__(self):
         s = ''
         for u in self.parent.keys():
