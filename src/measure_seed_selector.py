@@ -4,6 +4,7 @@ import snap
 import os, sys, getopt, json
 sys.path.append('information_spread')
 import random_seed as RS
+import greedy_seed as GS
 import independent_cascade as IC
 
 
@@ -21,7 +22,7 @@ def usage(args):
 
 def main():
 
-    known_seeds = [ "random", ]
+    known_seeds = [ "random","greedy", ]
     
     try:
         opts, args = getopt.getopt(sys.argv[1:], "s:k:i:o:n:p:h?",
@@ -115,6 +116,8 @@ def run_measurement(args):
     spread_probability = args['spread-probability']
     if args['seed'] == "random":
         selector = RS.RandomSeedSelector()
+    elif args['seed'] == "greedy":
+        selector = GS.GreedySeedSelector()
     else:
         print "Unknown seed selector:", args['seed']
         return
