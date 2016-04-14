@@ -77,7 +77,7 @@ def measure_seed_sizes(graph, spread_probability, number_of_trials, selector, ma
         for i in range(number_of_trials):
             print "k = %d - trial = %d/%d - %s" % (k, i, number_of_trials, time.asctime())
             active_set_0s.append( selector.select_seeds(graph, k) )
-            sections = "trail-loop"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
+            #sections = "trial-loop"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
         selection_time = time.clock() - t0
         print "k = %d - %s - selection time %f" % (k, time.asctime(), selection_time)
         

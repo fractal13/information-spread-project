@@ -38,19 +38,19 @@ class CompactCommunitySeedSelector(seed_selector.SeedSelector):
         """
 
         # make copy of graph, so original isn't messed up
-        sections = "copy-graph"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
+        # sections = "copy-graph"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(1); print "SLEPT";
         graph = copy_graph(graph)
-        sections = "find-communities"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
+        # sections = "find-communities"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(1); print "SLEPT";
         
-        print "Finding communities"
+        # print "Finding communities"
         communities = compact_community.compact_community(graph, 10)
-        print "Found communities"
-        sections = "get-sets-roots"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
+        # print "Found communities"
+        # sections = "get-sets-roots"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(1); print "SLEPT";
         community_list = communities.get_sets()
         roots = communities.get_roots()
         roots.sort(key = lambda r: len(community_list[r]), reverse=True)
 
-        sections = "seed-choice-loop"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
+        # sections = "seed-choice-loop"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(1); print "SLEPT";
         seeds = []
         i = 0
         while len(seeds) < k and len(seeds) < graph.GetNodes():
@@ -73,7 +73,7 @@ class CompactCommunitySeedSelector(seed_selector.SeedSelector):
 
         # remove references to copy of graph
         graph = None
-        sections = "seed-done"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
+        # sections = "seed-done"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
         return seeds
 
         

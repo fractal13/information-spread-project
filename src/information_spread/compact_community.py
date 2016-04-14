@@ -1,6 +1,21 @@
 import snap
 import LEXdfs, disjoint_set
 import random, os, sys, time
+import resource
+
+def debug_sleep_a(tag, t):
+    usage = resource.getrusage(resource.RUSAGE_SELF);
+    print "START", tag, "MEMORY: %d" % (usage[2])
+    sys.stdout.flush()
+    time.sleep(t)
+    return
+    
+def debug_sleep_b(tag, t):
+    usage = resource.getrusage(resource.RUSAGE_SELF);
+    print "DONE ", tag, "MEMORY: %d" % (usage[2])
+    sys.stdout.flush()
+    time.sleep(t)
+    return
 
 SCORE = "score"
 
@@ -20,48 +35,54 @@ def compact_community(graph, lexcount, maxiter=-1):
     # score the edges
     #
 
-    sections = "initial-edge-attributes"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
+    scores = {}
+
+    # debug_sleep_a("initial-edge-attributes", 1)
     # set all scores to 0.0
-    graph.AddFltAttrE(SCORE, 0.0)
     edge = graph.BegEI()
     while edge < graph.EndEI():
-        graph.AddFltAttrDatE(edge, 0.0, SCORE)
+        key = (edge.GetSrcNId(), edge.GetDstNId())
+        scores[key] = 0.0
         edge.Next()
-    sections = "initialization-done"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
+    # debug_sleep_b("initial-edge-attributes", 1)
 
     # average scores over lexcount runs
     m = float(graph.GetEdges())
     for i in range(lexcount):
         # print "LEXdfs:", i, time.time()
-        sections = "LEXdfs"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(10); print "SLEPT";
-        LEXdfs.LEXdfs(graph, graph.GetNI(graph.GetRndNId()))
+        # debug_sleep_a("LEXdfs     ", 0)
+        attrs = LEXdfs.LEXdfs(graph, graph.GetNI(graph.GetRndNId()))
+        # debug_sleep_b("LEXdfs     ", 1)
         
-        sections = "score-edges"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(10); print "SLEPT";
+        # debug_sleep_a("score-edges", 0)
         # adding current score to average
         edge = graph.BegEI()
         while edge < graph.EndEI():
-            d = float(abs(graph.GetIntAttrDatN(edge.GetSrcNId(), LEXdfs.VISITED) -
-                          graph.GetIntAttrDatN(edge.GetDstNId(), LEXdfs.VISITED)))
+            key = (edge.GetSrcNId(), edge.GetDstNId())
+            
+            d = float(abs(attrs[LEXdfs.VISITED][key[0]] -
+                          attrs[LEXdfs.VISITED][key[1]]))
             s = 1.0 - d/m
-            score = (graph.GetFltAttrDatE(edge, SCORE) * i + s) / (i+1)
-            graph.DelAttrDatE(edge, SCORE)
-            graph.AddFltAttrDatE(edge, s, SCORE)
+            scores[key] = (scores[key] * i + s) / (i+1)
             edge.Next()
         # done adding current score to average
+        # debug_sleep_b("score-edges", 1)
 
     # done with edge scoring
 
-    sections = "make-edges-list"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
+    # debug_sleep_a("make-edges-list", 1)
     # construct list of edges ordered by SCORE
     edges = []
     edge = graph.BegEI()
     midscore = 0.0
     while edge < graph.EndEI():
-        score = graph.GetFltAttrDatE(edge, SCORE)
-        midscore += score
-        edges.append( ((edge.GetSrcNId(), edge.GetDstNId(), score)) )
+        key = (edge.GetSrcNId(), edge.GetDstNId())
+        midscore += scores[key]
+        edges.append( ((edge.GetSrcNId(), edge.GetDstNId(), scores[key])) )
         # print "%d - %d : %f" % edges[-1]
         edge.Next()
+
+    # debug_sleep_b("make-edges-list", 1)
 
     midscore /= len(edges)
     
@@ -74,7 +95,7 @@ def compact_community(graph, lexcount, maxiter=-1):
     # for e in edges:
     #     print "%d - %d : %f" % e
 
-    sections = "grow-clusters"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
+    # debug_sleep_a("grow-clusters", 1)
     clusters = disjoint_set.DisjointSet(True)
     
     node = graph.BegNI()
@@ -89,7 +110,7 @@ def compact_community(graph, lexcount, maxiter=-1):
         clusters.union(v1, v2)
         i += 1
     # print "done:", edges[-1][2], midscore
-    sections = "clusters-done"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
+    # debug_sleep_b("grow-clusters", 1)
     return clusters
 
 
