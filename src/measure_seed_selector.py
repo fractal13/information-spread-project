@@ -5,6 +5,7 @@ import os, sys, getopt, json
 sys.path.append('information_spread')
 import random_seed as RS
 import compact_community_seed as CCS
+import greedy_seed as GS
 import independent_cascade as IC
 
 
@@ -22,8 +23,8 @@ def usage(args):
 
 def main():
 
-    known_seeds = [ "random", "compact", ]
-    
+    known_seeds = [ "random", "compact", "greedy", ]
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "s:k:i:o:n:p:h?",
                                    [ "src=", "max-k=",
@@ -118,6 +119,8 @@ def run_measurement(args):
         selector = RS.RandomSeedSelector()
     elif args['seed'] == "compact":
         selector = CCS.CompactCommunitySeedSelector()
+    elif args['seed'] == "greedy":
+        selector = GS.GreedySeedSelector()
     else:
         print "Unknown seed selector:", args['seed']
         return
