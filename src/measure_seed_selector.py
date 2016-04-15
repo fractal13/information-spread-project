@@ -7,6 +7,7 @@ import random_seed as RS
 import compact_community_seed as CCS
 import greedy_seed as GS
 import independent_cascade as IC
+import hueristic_degree_centered_seed as HDCS
 
 
 def usage(args):
@@ -23,7 +24,7 @@ def usage(args):
 
 def main():
 
-    known_seeds = [ "random", "compact", "greedy", ]
+    known_seeds = [ "random", "compact", "greedy", "degree" ]
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "s:k:i:o:n:p:h?",
@@ -69,33 +70,45 @@ def main():
         sys.exit(1)
 
     if args['seed'] not in known_seeds:
+        print ""
         print "Known seed algorithims: %s" % (" ".join(known_seeds),)
         print "%s isn't one of them." % (args['seed'])
+        print ""
         usage(args)
         sys.exit(1)
         
     if args['max-k'] < 1 or args['max-k'] > 30:
+        print ""
         print "Max K should be in the range 1 - 30."
+        print ""
         usage(args)
         sys.exit(1)
 
     if not os.path.exists(args['input']):
+        print ""
         print "The input graph file must exist."
+        print ""
         usage(args)
         sys.exit(1)
 
     if os.path.exists(args['output']):
+        print ""
         print "The output json file must not exist."
+        print ""
         usage(args)
         sys.exit(1)
 
     if args['n-trials'] < 1:
+        print ""
         print "Must do at least one trial."
+        print ""
         usage(args)
         sys.exit(1)
 
     if args['spread-probability'] < 0.0 or args['spread-probability'] > 1.0:
+        print ""
         print "The spread probability should be in range 0.0 to 1.0"
+        print ""
         usage(args)
         sys.exit(1)
 
@@ -121,6 +134,8 @@ def run_measurement(args):
         selector = CCS.CompactCommunitySeedSelector()
     elif args['seed'] == "greedy":
         selector = GS.GreedySeedSelector()
+    elif args['seed'] == "degree":
+        selector = HDCS.DegreeCenteredSeedSelector()
     else:
         print "Unknown seed selector:", args['seed']
         return

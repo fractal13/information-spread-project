@@ -39,7 +39,7 @@ class DegreeCenteredSeedSelector(seed_selector.SeedSelector):
             count =0
             for key in sorted_x:
                  if count<k:
-                     node_ids.add(key)
+                     node_ids.add(key[0])
                      count=count+1;
                  else:
                      break;
