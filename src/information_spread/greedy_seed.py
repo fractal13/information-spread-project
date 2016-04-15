@@ -21,7 +21,7 @@ class GreedySeedSelector(seed_selector.SeedSelector):
         node = graph.BegNI()
         node_ids = set()
         while node < graph.EndNI():
-            all_nodes[node.GetId()] = node;
+            all_nodes[node.GetId()] = True;
             node.Next()
 
         if len(all_nodes) < k:
@@ -30,7 +30,7 @@ class GreedySeedSelector(seed_selector.SeedSelector):
         else:
             distance = dict();
             for node_id in all_nodes:
-                distance[node_id]=self.getDist(all_nodes[node_id], graph);
+                distance[node_id]=self.getDist(graph.GetNI(node_id), graph);
             mdist = sorted(distance,key=distance.get)
             for i in mdist[:k]:
                 node_ids.add(i);
@@ -38,7 +38,6 @@ class GreedySeedSelector(seed_selector.SeedSelector):
         return node_ids
     
     def getDist(self,node, graph):
-        
         out = node.GetOutDeg();
         if(out==0):
             return 0;
