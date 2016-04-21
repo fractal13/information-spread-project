@@ -49,12 +49,8 @@ def compact_community(graph, lexcount, maxiter=-1, maxsize=-1):
     # average scores over lexcount runs
     m = float(graph.GetEdges())
     for i in range(lexcount):
-        # print "LEXdfs:", i, time.time()
-        # debug_sleep_a("LEXdfs     ", 0)
         attrs = LEXdfs.LEXdfs(graph, graph.GetNI(graph.GetRndNId()))
-        # debug_sleep_b("LEXdfs     ", 1)
         
-        # debug_sleep_a("score-edges", 0)
         # adding current score to average
         edge = graph.BegEI()
         while edge < graph.EndEI():
@@ -66,11 +62,9 @@ def compact_community(graph, lexcount, maxiter=-1, maxsize=-1):
             scores[key] = (scores[key] * i + s) / (i+1)
             edge.Next()
         # done adding current score to average
-        # debug_sleep_b("score-edges", 1)
 
     # done with edge scoring
 
-    # debug_sleep_a("make-edges-list", 1)
     # construct list of edges ordered by SCORE
     edges = []
     edge = graph.BegEI()
@@ -79,23 +73,12 @@ def compact_community(graph, lexcount, maxiter=-1, maxsize=-1):
         key = (edge.GetSrcNId(), edge.GetDstNId())
         midscore += scores[key]
         edges.append( ((edge.GetSrcNId(), edge.GetDstNId(), scores[key])) )
-        # print "%d - %d : %f" % edges[-1]
         edge.Next()
-
-    # debug_sleep_b("make-edges-list", 1)
 
     midscore /= len(edges)
     
     # we leave in ascending order to make pop() give the next edge we want.
     edges.sort(key = lambda e: e[2])
-    # print
-    # print
-    # print "Sorted"
-    # print
-    # for e in edges:
-    #     print "%d - %d : %f" % e
-
-    # debug_sleep_a("grow-clusters", 1)
     clusters = disjoint_set.DisjointSet(True)
     
     node = graph.BegNI()
@@ -105,17 +88,21 @@ def compact_community(graph, lexcount, maxiter=-1, maxsize=-1):
 
     i = 0
     currsize = 0
-    while len(edges) > 0 and (i < maxiter or (maxiter < 0 and edges[-1][2] > midscore)) and ((maxsize < 0) or (currsize < maxsize)):
+    while len(edges) > 0 and \
+          (i < maxiter or (maxiter < 0 and edges[-1][2] > midscore)) and \
+          ((maxsize < 0) or (currsize < maxsize)):
         v1, v2, s = edges.pop()
-        # print s, midscore
-        clusters.union(v1, v2)
-        i += 1
-        s = clusters.get_set_size(v2)
-        if s > currsize:
-            currsize = s
+        if clusters.get_set_size(v1) >= maxsize or \
+           clusters.get_set_size(v2) >= maxsize:
+            # don't merge, would make too large
+            pass
+        else:
+            clusters.union(v1, v2)
+            i += 1
+            s = clusters.get_set_size(v2)
+            if s > currsize:
+                currsize = s
 
-    # print "done:", edges[-1][2], midscore
-    # debug_sleep_b("grow-clusters", 1)
     return clusters
 
 
