@@ -121,6 +121,7 @@ class CompactCommunitySeedSelector(seed_selector.SeedSelector):
         self.mCommunityList = self.mCommunities.get_sets()
         self.mCommunityRoots = self.mCommunities.get_roots()
         self.mCommunityRoots.sort(key = lambda r: len(self.mCommunityList[r]), reverse=True)
+        print "Number of communities: ", len(self.mCommunityRoots)
         return
 
     def select_seeds(self, graph, k):

@@ -47,7 +47,7 @@ def compact_community(graph, lexcount, maxiter=-1, maxsize=-1):
     # debug_sleep_b("initial-edge-attributes", 1)
 
     # average scores over lexcount runs
-    m = float(graph.GetEdges())
+    m = float(graph.GetNodes())
     for i in range(lexcount):
         attrs = LEXdfs.LEXdfs(graph, graph.GetNI(graph.GetRndNId()))
         
@@ -76,7 +76,7 @@ def compact_community(graph, lexcount, maxiter=-1, maxsize=-1):
         edge.Next()
 
     midscore /= len(edges)
-    
+    midscore = 0.0
     # we leave in ascending order to make pop() give the next edge we want.
     edges.sort(key = lambda e: e[2])
     clusters = disjoint_set.DisjointSet(True)
@@ -92,16 +92,15 @@ def compact_community(graph, lexcount, maxiter=-1, maxsize=-1):
           (i < maxiter or (maxiter < 0 and edges[-1][2] > midscore)) and \
           ((maxsize < 0) or (currsize < maxsize)):
         v1, v2, s = edges.pop()
-        if clusters.get_set_size(v1) >= maxsize or \
-           clusters.get_set_size(v2) >= maxsize:
+        if clusters.get_set_size(v1) + clusters.get_set_size(v2) >= maxsize:
             # don't merge, would make too large
             pass
         else:
             clusters.union(v1, v2)
-            i += 1
             s = clusters.get_set_size(v2)
             if s > currsize:
                 currsize = s
+        i += 1
 
     return clusters
 
