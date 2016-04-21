@@ -1,6 +1,6 @@
 import seed_selector
 
-class GreedySeedSelector(seed_selector.SeedSelector):
+class DistanceSeedSelector(seed_selector.SeedSelector):
 
     def __init__(self):
         seed_selector.SeedSelector.__init__(self)
@@ -14,9 +14,9 @@ class GreedySeedSelector(seed_selector.SeedSelector):
         returns a Python set of node ids greedily selected from graph
         """
 
-        return self.select_greedy_seeds(graph, k)
+        return self.select_distance_seeds(graph, k)
         
-    def select_greedy_seeds(self, graph, k):
+    def select_distance_seeds(self, graph, k):
         all_nodes = dict();
         node = graph.BegNI()
         node_ids = set()

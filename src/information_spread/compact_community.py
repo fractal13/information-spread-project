@@ -19,7 +19,7 @@ def debug_sleep_b(tag, t):
 
 SCORE = "score"
 
-def compact_community(graph, lexcount, maxiter=-1):
+def compact_community(graph, lexcount, maxiter=-1, maxsize=-1):
     """
     Find compact communities in graph.  Average
     edge scores of lexcount trials.  Stop building
@@ -104,11 +104,16 @@ def compact_community(graph, lexcount, maxiter=-1):
         node.Next()
 
     i = 0
-    while len(edges) > 0 and (i < maxiter or (maxiter < 0 and edges[-1][2] > midscore)):
+    currsize = 0
+    while len(edges) > 0 and (i < maxiter or (maxiter < 0 and edges[-1][2] > midscore)) and ((maxsize < 0) or (currsize < maxsize)):
         v1, v2, s = edges.pop()
         # print s, midscore
         clusters.union(v1, v2)
         i += 1
+        s = clusters.get_set_size(v2)
+        if s > currsize:
+            currsize = s
+
     # print "done:", edges[-1][2], midscore
     # debug_sleep_b("grow-clusters", 1)
     return clusters

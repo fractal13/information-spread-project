@@ -6,6 +6,7 @@ class DisjointSet:
     def __init__(self, do_compress=False):
         self.parent = {}
         self.rank = {}
+        self.size = {}
         self.compress = do_compress
         return
 
@@ -13,6 +14,7 @@ class DisjointSet:
     def makeset(self, u):
         self.parent[u] = u
         self.rank[u] = 0
+        self.size[u] = 1
         return
 
     # move all children to point directly at root (shallow trees!)
@@ -38,13 +40,21 @@ class DisjointSet:
             return
         if self.rank[pu] > self.rank[pv]:
             self.parent[pv] = pu
+            self.size[pu] += self.size[pv]
         else:
             self.parent[pu] = pv
             if self.rank[pu] == self.rank[pv]:
                 self.rank[pv] = self.rank[pv] + 1
+            self.size[pv] += self.size[pu]
         
         return
 
+    def get_size(self, u):
+        return self.size[u]
+        
+    def get_set_size(self, u):
+        return self.size[self.find(u)]
+        
     def get_roots(self):
         roots = []
         for u in self.parent.keys():

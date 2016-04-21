@@ -5,7 +5,7 @@ import os, sys, getopt, json
 sys.path.append('information_spread')
 import random_seed as RS
 import compact_community_seed as CCS
-import greedy_seed as GS
+import distance_seed as DST
 import independent_cascade as IC
 import hueristic_degree_centered_seed as HDCS
 
@@ -18,18 +18,22 @@ def usage(args):
     print "-o|--output [%s]   : file name to store json results" % (args['output'], )
     print "-n|--n-trials [%s]   : number of trials to average over" % (args['n-trials'], )
     print "-p|--spread-probability [%s]   : the probability of spread over a single edge" % (args['spread-probability'], )
+    print "   --lex-count [%s]   : LexDFS repeat count" % (args['lex-count'], )
+    print "   --max-iterations [%s]   : community union iteration maximum" % (args['max-iterations'], )
+    print "   --max-community-size [%s]   : community union maximum size" % (args['max-community-size'], )
     print "-?|-h|--help [%s]  : show this message and exit" % (args['help'], )
     
     return
 
 def main():
 
-    known_seeds = [ "random", "compact", "greedy", "degree" ]
+    known_seeds = [ "random", "compactdegree", "compactdistance", "distance", "degree" ]
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "s:k:i:o:n:p:h?",
                                    [ "src=", "max-k=",
                                      "input=", "output=", "n-trials=", "spread-probability=",
+                                     "lex-count=", "max-iterations=", "max-community-size=",
                                      "help", ])
     except getopt.GetoptError as e:
         print str(e)
@@ -44,6 +48,9 @@ def main():
         'output': 'results.json',
         'n-trials': 1,
         'spread-probability': 0.05,
+        'lex-count': 10,
+        'max-iterations': -1,
+        'max-community-size': 250,
     }
     for o, a in opts:
         if o in ("-?", "-h", "--help"):
@@ -60,6 +67,12 @@ def main():
             args['n-trials'] = int(a)
         elif o in ("-p", "--spread-probability"):
             args['spread-probability'] = float(a)
+        elif o in ("--lex-count"):
+            args['lex-count'] = int(a)
+        elif o in ("--max-iterations"):
+            args['max-iterations'] = int(a)
+        elif o in ("--max-community-size"):
+            args['max-community-size'] = int(a)
         else:
             print "Unexpected option: %s" % (o)
             usage(args)
@@ -130,10 +143,18 @@ def run_measurement(args):
     spread_probability = args['spread-probability']
     if args['seed'] == "random":
         selector = RS.RandomSeedSelector()
-    elif args['seed'] == "compact":
-        selector = CCS.CompactCommunitySeedSelector()
-    elif args['seed'] == "greedy":
-        selector = GS.GreedySeedSelector()
+    elif args['seed'] == "compactdegree":
+        selector = CCS.CompactCommunityDegreeSeedSelector()
+        selector.setLexCount(args['lex-count'])
+        selector.setMaxIterations(args['max-iterations'])
+        selector.setMaxCommunitySize(args['max-community-size'])
+    elif args['seed'] == "compactdistance":
+        selector = CCS.CompactCommunityDistanceSeedSelector()
+        selector.setLexCount(args['lex-count'])
+        selector.setMaxIterations(args['max-iterations'])
+        selector.setMaxCommunitySize(args['max-community-size'])
+    elif args['seed'] == "distance":
+        selector = DST.DistanceSeedSelector()
     elif args['seed'] == "degree":
         selector = HDCS.DegreeCenteredSeedSelector()
     else:
