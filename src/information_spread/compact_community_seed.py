@@ -95,8 +95,9 @@ class CompactCommunitySeedSelector(seed_selector.SeedSelector):
     def __init__(self):
         seed_selector.SeedSelector.__init__(self)
         self.mLexCount         = 10
-        self.mMaxIterations    = -1
-        self.mMaxCommunitySize = -1
+        self.mMaxIterations    = 1
+        self.mMaxCommunitySize = 1
+        self.mCommunityType    = compact_community.UNTIL_ITERATION
         return
 
     def getLexCount(self):
@@ -105,6 +106,8 @@ class CompactCommunitySeedSelector(seed_selector.SeedSelector):
         return self.mMaxIterations
     def getMaxCommunitySize(self):
         return self.mMaxCommunitySize
+    def getCommunityType(self):
+        return self.mCommunityType
 
     def setLexCount(self, v):
         self.mLexCount = v
@@ -115,13 +118,29 @@ class CompactCommunitySeedSelector(seed_selector.SeedSelector):
     def setMaxCommunitySize(self, v):
         self.mMaxCommunitySize = v
         return
+    def setCommunityType(self, v):
+        self.mCommunityType = v
+        return
 
     def findCommunities(self, graph):
-        self.mCommunities = compact_community.compact_community(graph, self.mLexCount, self.mMaxIterations, self.mMaxCommunitySize)
+        if self.mCommunityType == compact_community.UNTIL_ITERATION:
+            parameter = self.mMaxIterations
+        elif self.mCommunityType == compact_community.UNTIL_MAXSIZE:
+            parameter = self.mMaxCommunitySize
+        elif self.mCommunityType == compact_community.LIMIT_CLUSTER_SIZE:
+            parameter = self.mMaxCommunitySize
+        else:
+            raise Exception("Bad community type")
+            
+        self.mCommunities = compact_community.compact_community(graph, self.mLexCount, self.mCommunityType, parameter)
         self.mCommunityList = self.mCommunities.get_sets()
         self.mCommunityRoots = self.mCommunities.get_roots()
         self.mCommunityRoots.sort(key = lambda r: len(self.mCommunityList[r]), reverse=True)
         print "Number of communities: ", len(self.mCommunityRoots)
+        print "Sizes:",
+        for r in self.mCommunityRoots:
+            print self.mCommunities.get_set_size(r),
+        print
         return
 
     def select_seeds(self, graph, k):

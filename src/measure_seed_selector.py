@@ -8,6 +8,7 @@ import compact_community_seed as CCS
 import distance_seed as DST
 import independent_cascade as IC
 import hueristic_degree_centered_seed as HDCS
+import compact_community
 
 
 def usage(args):
@@ -21,6 +22,7 @@ def usage(args):
     print "   --lex-count [%s]   : LexDFS repeat count" % (args['lex-count'], )
     print "   --max-iterations [%s]   : community union iteration maximum" % (args['max-iterations'], )
     print "   --max-community-size [%s]   : community union maximum size" % (args['max-community-size'], )
+    print "   --community-type [%s]   : community type 1-maxiter 2-maxsize 3-maxunion" % (args['community-type'], )
     print "-?|-h|--help [%s]  : show this message and exit" % (args['help'], )
     
     return
@@ -33,7 +35,7 @@ def main():
         opts, args = getopt.getopt(sys.argv[1:], "s:k:i:o:n:p:h?",
                                    [ "src=", "max-k=",
                                      "input=", "output=", "n-trials=", "spread-probability=",
-                                     "lex-count=", "max-iterations=", "max-community-size=",
+                                     "lex-count=", "max-iterations=", "max-community-size=", "community-type=",
                                      "help", ])
     except getopt.GetoptError as e:
         print str(e)
@@ -51,6 +53,7 @@ def main():
         'lex-count': 10,
         'max-iterations': -1,
         'max-community-size': 250,
+        'community-type': compact_community.LIMIT_CLUSTER_SIZE,
     }
     for o, a in opts:
         if o in ("-?", "-h", "--help"):
@@ -73,6 +76,8 @@ def main():
             args['max-iterations'] = int(a)
         elif o in ("--max-community-size"):
             args['max-community-size'] = int(a)
+        elif o in ("--community-type"):
+            args['community-type'] = int(a)
         else:
             print "Unexpected option: %s" % (o)
             usage(args)
@@ -148,11 +153,13 @@ def run_measurement(args):
         selector.setLexCount(args['lex-count'])
         selector.setMaxIterations(args['max-iterations'])
         selector.setMaxCommunitySize(args['max-community-size'])
+        selector.setCommunityType(args['community-type'])
     elif args['seed'] == "compactdistance":
         selector = CCS.CompactCommunityDistanceSeedSelector()
         selector.setLexCount(args['lex-count'])
         selector.setMaxIterations(args['max-iterations'])
         selector.setMaxCommunitySize(args['max-community-size'])
+        selector.setCommunityType(args['community-type'])
     elif args['seed'] == "distance":
         selector = DST.DistanceSeedSelector()
     elif args['seed'] == "degree":
