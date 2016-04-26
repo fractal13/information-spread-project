@@ -1,4 +1,6 @@
 import seed_selector
+import compact_community_seed
+import random
 
 class DistanceSeedSelector(seed_selector.SeedSelector):
 
@@ -31,7 +33,7 @@ class DistanceSeedSelector(seed_selector.SeedSelector):
             distance = dict();
             for node_id in all_nodes:
                 distance[node_id]=self.getDist(graph.GetNI(node_id), graph);
-            mdist = sorted(distance,key=distance.get)
+            mdist = sorted(distance,key=distance.get, reverse=True)
             for i in mdist[:k]:
                 node_ids.add(i);
                 
@@ -52,3 +54,78 @@ class DistanceSeedSelector(seed_selector.SeedSelector):
         return out+self.getDist(m, graph);
                 
     
+class FWDistanceSeedSelector(seed_selector.SeedSelector):
+
+    def __init__(self):
+        seed_selector.SeedSelector.__init__(self)
+        self.mHaveAverageDistances = False
+        return
+
+    def select_seeds(self, graph, k):
+        """
+        graph is a snap.PNEANet network (directed edges, attributes allowed for edges and nodes)
+        k is an integer, the desired number of seed nodes
+        
+        returns a Python set of node ids greedily selected from graph
+        """
+
+        return self.select_distance_seeds(graph, k)
+        
+    def select_distance_seeds(self, graph, k):
+
+        if not self.mHaveAverageDistances:
+
+            node = graph.BegNI()
+            self.mNodeIds = []
+            while node < graph.EndNI():
+                self.mNodeIds.append(node.GetId())
+                node.Next()
+        
+            self.mAverageDistances = compact_community_seed.floyd_warshall(graph, self.mNodeIds)
+            self.mHaveAverageDistances = True
+                
+        random.shuffle(self.mNodeIds)
+        potential_seeds = sorted(self.mNodeIds, key=lambda node_id: self.mAverageDistances[node_id])
+        seeds = potential_seeds[:k]
+        # for node_id in potential_seeds[:50]:
+        #     print node_id, self.mAverageDistances[node_id]
+            
+        return seeds
+
+class BFSDistanceSeedSelector(seed_selector.SeedSelector):
+
+    def __init__(self):
+        seed_selector.SeedSelector.__init__(self)
+        self.mHaveAverageDistances = False
+        return
+
+    def select_seeds(self, graph, k):
+        """
+        graph is a snap.PNEANet network (directed edges, attributes allowed for edges and nodes)
+        k is an integer, the desired number of seed nodes
+        
+        returns a Python set of node ids greedily selected from graph
+        """
+
+        return self.select_distance_seeds(graph, k)
+        
+    def select_distance_seeds(self, graph, k):
+
+        if not self.mHaveAverageDistances:
+
+            node = graph.BegNI()
+            self.mNodeIds = []
+            while node < graph.EndNI():
+                self.mNodeIds.append(node.GetId())
+                node.Next()
+
+            self.mAverageDistances = compact_community_seed.average_bfs_distance_all(graph, self.mNodeIds)
+            self.mHaveAverageDistances = True
+            
+        random.shuffle(self.mNodeIds)
+        potential_seeds = sorted(self.mNodeIds, key=lambda node_id: self.mAverageDistances[node_id])
+        seeds = potential_seeds[:k]
+        # for node_id in potential_seeds[:50]:
+        #     print node_id, self.mAverageDistances[node_id]
+            
+        return seeds

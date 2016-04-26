@@ -1,5 +1,5 @@
 import snap
-import random, os, time, sys
+import random, os, time, sys, json
 
 def independent_cascade(graph, active_set_0, spread_probability):
     """
@@ -57,7 +57,7 @@ def independent_cascade_average_influence(graph, active_set_0, spread_probabilit
 
     return total / float(number_of_trials)
 
-def measure_seed_sizes(graph, spread_probability, number_of_trials, selector, max_k):
+def measure_seed_sizes(graph, spread_probability, number_of_trials, selector, max_k, filename=None):
     """
     graph is a snap.PNEANet network (directed edges, attributes allowed for edges and nodes)
     spread_probability is the probability that any node u, will activate node v if there is an edge (u, v)
@@ -73,13 +73,14 @@ def measure_seed_sizes(graph, spread_probability, number_of_trials, selector, ma
     for k in range(1, max_k+1):
         print "k = %d - %s" % (k, time.asctime())
         active_set_0s = []
+        selector.reset_internal_time()
         t0 = time.clock()
         for i in range(number_of_trials):
             print "AS0: k = %d - trial = %d/%d - %s" % (k, i, number_of_trials, time.asctime())
             active_set_0s.append( selector.select_seeds(graph, k) )
-            #sections = "trial-loop"; print "SLEEPING", sections,; sys.stdout.flush(); time.sleep(3); print "SLEPT";
         selection_time = time.clock() - t0
-        print "k = %d - %s - selection time %f" % (k, time.asctime(), selection_time)
+        print "k = %d - %s - selection time %f + %f" % (k, time.asctime(), selection_time, selector.get_internal_time())
+        selection_time += selector.get_internal_time()
         
         total = 0.
         for i in range(number_of_trials):
@@ -92,6 +93,11 @@ def measure_seed_sizes(graph, spread_probability, number_of_trials, selector, ma
         avg_selection_time = selection_time / float(number_of_trials)
         print "k = %d  result = %f  ast = %f  - %s" % (k, result, avg_selection_time, time.asctime())
         results.append( (k, result, avg_selection_time) )
-        
+
+        if filename:
+            fout = open(filename, "w")
+            fout.write(json.dumps(results, indent=1))
+            fout.close()
+            
     return results
 

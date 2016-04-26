@@ -8,6 +8,7 @@ import compact_community_seed as CCS
 import distance_seed as DST
 import independent_cascade as IC
 import hueristic_degree_centered_seed as HDCS
+import greedy_hill_climbing_seed as GHCS
 import compact_community
 
 
@@ -23,25 +24,16 @@ def usage(args):
     print "   --max-iterations [%s]   : community union iteration maximum" % (args['max-iterations'], )
     print "   --max-community-size [%s]   : community union maximum size" % (args['max-community-size'], )
     print "   --community-type [%s]   : community type 1-maxiter 2-maxsize 3-maxunion" % (args['community-type'], )
+    print "   --community-file [%s]   : file with pre-calculated communities" % (args['community-file'], )
+    print "   --community-choice [%s]  : how to choose next community 1-random 2-rotate 3-biggest" % (args['community-choice'], )
     print "-?|-h|--help [%s]  : show this message and exit" % (args['help'], )
     
     return
 
 def main():
 
-    known_seeds = [ "random", "compactdegree", "compactdistance", "distance", "degree" ]
+    known_seeds = [ "random", "compactdegree", "compactdistance", "distance", "distanceFW", "distanceBFS", "degree", "greedy", "compactgreedy" ]
 
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "s:k:i:o:n:p:h?",
-                                   [ "src=", "max-k=",
-                                     "input=", "output=", "n-trials=", "spread-probability=",
-                                     "lex-count=", "max-iterations=", "max-community-size=", "community-type=",
-                                     "help", ])
-    except getopt.GetoptError as e:
-        print str(e)
-        usage()
-        sys.exit(1)
-        
     args = {
         'help': False,
         'seed': "random",
@@ -54,7 +46,22 @@ def main():
         'max-iterations': -1,
         'max-community-size': 250,
         'community-type': compact_community.LIMIT_CLUSTER_SIZE,
+        'community-file': None,
+        'community-choice': 2,
     }
+    
+    try:
+        opts, noargs = getopt.getopt(sys.argv[1:], "s:k:i:o:n:p:h?",
+                                     [ "seed=", "max-k=",
+                                       "input=", "output=", "n-trials=", "spread-probability=",
+                                       "lex-count=", "max-iterations=", "max-community-size=",
+                                       "community-type=", "community-file=", "community-choice=",
+                                       "help", ])
+    except getopt.GetoptError as e:
+        print str(e)
+        usage(args)
+        sys.exit(1)
+        
     for o, a in opts:
         if o in ("-?", "-h", "--help"):
             args['help'] = True
@@ -78,6 +85,10 @@ def main():
             args['max-community-size'] = int(a)
         elif o in ("--community-type"):
             args['community-type'] = int(a)
+        elif o in ("--community-file"):
+            args['community-file'] = a
+        elif o in ("--community-choice"):
+            args['community-choice'] = int(a)
         else:
             print "Unexpected option: %s" % (o)
             usage(args)
@@ -154,23 +165,43 @@ def run_measurement(args):
         selector.setMaxIterations(args['max-iterations'])
         selector.setMaxCommunitySize(args['max-community-size'])
         selector.setCommunityType(args['community-type'])
+        selector.setCommunityFile(args['community-file'])
+        selector.setCommunityChoiceType(args['community-choice'])
     elif args['seed'] == "compactdistance":
         selector = CCS.CompactCommunityDistanceSeedSelector()
         selector.setLexCount(args['lex-count'])
         selector.setMaxIterations(args['max-iterations'])
         selector.setMaxCommunitySize(args['max-community-size'])
         selector.setCommunityType(args['community-type'])
+        selector.setCommunityFile(args['community-file'])
+        selector.setCommunityChoiceType(args['community-choice'])
+    elif args['seed'] == "compactgreedy":
+        selector = CCS.CompactCommunityGreedyHillClimbingSeedSelector()
+        selector.setLexCount(args['lex-count'])
+        selector.setMaxIterations(args['max-iterations'])
+        selector.setMaxCommunitySize(args['max-community-size'])
+        selector.setCommunityType(args['community-type'])
+        selector.setCommunityFile(args['community-file'])
+        selector.setCommunityChoiceType(args['community-choice'])
+        selector.setSpreadProbability(spread_probability)
     elif args['seed'] == "distance":
         selector = DST.DistanceSeedSelector()
+    elif args['seed'] == "distanceFW":
+        selector = DST.FWDistanceSeedSelector()
+    elif args['seed'] == "distanceBFS":
+        selector = DST.BFSDistanceSeedSelector()
     elif args['seed'] == "degree":
         selector = HDCS.DegreeCenteredSeedSelector()
+    elif args['seed'] == "greedy":
+        selector = GHCS.GreedyHillClimbingSeedSelector()
+        selector.setSpreadProbability(spread_probability)
     else:
         print "Unknown seed selector:", args['seed']
         return
 
     max_k = args['max-k']
 
-    results = IC.measure_seed_sizes(graph, spread_probability, number_of_trials, selector, max_k)
+    results = IC.measure_seed_sizes(graph, spread_probability, number_of_trials, selector, max_k, args['output'])
 
     fout = open(args['output'], "w")
     fout.write(json.dumps(results, indent=1))

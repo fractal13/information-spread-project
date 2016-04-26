@@ -1,7 +1,7 @@
 class SeedSelector:
 
     def __init__(self):
-        # empty
+        self.mInternalTime = 0.0
         return
 
     def select_seeds(self, graph, k):
@@ -13,4 +13,13 @@ class SeedSelector:
         """
         raise NotImplementedError
         return set()
+
+    def get_internal_time(self):
+        return self.mInternalTime
+
+    def reset_internal_time(self):
+        self.mInternalTime = 0.0
+        return
+
+
 
