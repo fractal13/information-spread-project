@@ -1,0 +1,22 @@
+Iteration cutoff and largest community cutoff produce similar results.
+
+Refusing to merge into mega-communities produces many similarly sized
+communities.
+
+The seed selection algorithms prefer to
+have access to entire network, under iteration and largest community cutoffs.
+
+Rotation through similarly sized communities performs well, even for moderately
+sized communities.
+
+Random choice in similarly sized communities performs better on moderately
+sized communities than choosing the largest community.
+
+Choosing largest community prefers to have large communities for all
+seed selection algorithms.
+
+
+
+
+
+
