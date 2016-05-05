@@ -85,21 +85,26 @@ def greedy_hill_climbing_thread(graph, k, candidate_node_ids, spread_probability
         
 
 def greedy_hill_climing_choose_next_node(graph, A0, candidate_node_ids, spread_probability):
+
     
-    final_active = independent_cascade.independent_cascade(graph, A0, spread_probability)
-    best_spread_count = len(final_active)
+    #final_active = independent_cascade.independent_cascade(graph, A0, spread_probability)
+    best_spread_count = 0 #len(final_active)
     best_node_id = -1
+    repeat_count = len(candidate_node_ids)
     
     for node_id in candidate_node_ids:
         
         A1 = A0[:] + [ node_id ]
         # FIXME: For true greedy hill climbing best results, must repeat this
         #        many times and average
-        for i in range(1):
+        total_activate = 0.
+        for i in range(repeat_count):
             final_active = independent_cascade.independent_cascade(graph, A1, spread_probability)
-            if len(final_active) > best_spread_count:
-                best_spread_count = len(final_active)
-                best_node_id = node_id
+            total_activate += len(final_active)
+            
+        if total_activate > best_spread_count:
+            best_spread_count = total_activate
+            best_node_id = node_id
     
     return best_node_id
         
